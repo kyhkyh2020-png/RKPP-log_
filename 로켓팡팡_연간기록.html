@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>로켓팡팡 연간 기록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --paper:#f4efe4;
+    --paper2:#ece4d3;
+    --ink:#23301f;
+    --ink2:#4a5a42;
+    --line:#d8cdb6;
+    --gold:#b8893a;
+    --gold-soft:#f0e3c4;
+    --peak:#a8421f;   /* ★ 대목(빨간색) 표시 색 — 이 한 줄만 바꾸면 됩니다 */
+    --peak-soft:color-mix(in srgb, var(--peak) 16%, #fff);
+    --peak-border:color-mix(in srgb, var(--peak) 35%, #fff);
+    --shadow:rgba(35,48,31,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Pretendard',-apple-system,sans-serif;
+    background:var(--paper);
+    background-image:radial-gradient(circle at 100% 0%,rgba(184,137,58,.06),transparent 40%),
+                     radial-gradient(circle at 0% 100%,rgba(35,48,31,.05),transparent 40%);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px 120px}
+
+  header{padding:28px 4px 18px;border-bottom:2px solid var(--ink);margin-bottom:6px}
+  .kicker{font-size:11px;letter-spacing:3px;color:var(--gold);font-weight:700;text-transform:uppercase}
+  h1{font-family:'Gowun Batang',serif;font-size:30px;line-height:1.15;margin:6px 0 4px;letter-spacing:-.5px}
+  .sub{font-size:13px;color:var(--ink2);line-height:1.5}
+
+  .yearbar{display:flex;align-items:center;gap:10px;margin:18px 2px 14px}
+  .yearbar button{
+    background:none;border:1.5px solid var(--line);width:34px;height:34px;border-radius:50%;
+    font-size:18px;color:var(--ink2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:.15s
+  }
+  .yearbar button:active{background:var(--paper2)}
+  .year{font-family:'Gowun Batang',serif;font-size:24px;font-weight:700;min-width:84px;text-align:center}
+  .year span{font-size:14px;color:var(--ink2);font-family:'Pretendard'}
+  .savestate{margin-left:auto;font-size:11px;color:var(--ink2);opacity:.7}
+
+  .palette{margin:0 2px 16px}
+  .palette-toggle{display:flex;align-items:center;gap:8px;width:100%;background:#fbf8f0;
+    border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:13px;font-weight:600;
+    font-family:'Pretendard';color:var(--ink2);cursor:pointer}
+  .palette-toggle .caret{margin-left:auto;transition:.25s}
+  .palette.open .palette-toggle .caret{transform:rotate(180deg)}
+  .mc-panel{display:none;padding:14px 4px 4px}
+  .palette.open .mc-panel{display:block}
+  .mc-hint{font-size:12px;color:var(--ink2);margin-bottom:12px}
+  .mc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .mc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    background:#fbf8f0;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .mc-label{font-size:13px;font-weight:700;color:var(--ink)}
+  .mc-row input[type=color]{-webkit-appearance:none;appearance:none;border:none;background:none;
+    width:30px;height:30px;border-radius:50%;cursor:pointer;padding:0}
+  .mc-row input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  .mc-row input[type=color]::-webkit-color-swatch{border:2px solid #fff;border-radius:50%;
+    box-shadow:0 0 0 1px var(--line)}
+  .mc-row input[type=color]::-moz-color-swatch{border:2px solid #fff;border-radius:50%}
+  .mc-reset{margin-top:14px;width:100%;background:none;border:1px solid var(--line);color:var(--ink2);
+    padding:10px;border-radius:10px;font-size:12px;font-weight:600;font-family:'Pretendard';cursor:pointer}
+
+  .card{
+    background:#fbf8f0;border:1px solid var(--line);border-radius:14px;margin-bottom:12px;
+    box-shadow:0 2px 8px var(--shadow);overflow:hidden;transition:.2s
+  }
+  .card.open{box-shadow:0 8px 24px var(--shadow)}
+  .card.peak{border-color:var(--peak-border)}
+  .head{display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer}
+  .badge{
+    flex:none;width:46px;height:46px;border-radius:11px;background:var(--ink);color:var(--paper);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1
+  }
+  .card.peak .badge{background:var(--peak)}
+  .badge small{font-size:9px;opacity:.7;font-weight:500;margin-top:2px}
+  .badge b{font-size:17px;font-family:'Gowun Batang',serif}
+  .htext{flex:1;min-width:0}
+  .htext .period{font-size:12px;color:var(--gold);font-weight:700;margin-bottom:2px}
+  .htext .trigger{font-size:14px;font-weight:600;line-height:1.35;color:var(--ink)}
+  .peaktag{display:inline-block;font-size:10px;font-weight:700;color:var(--peak);background:var(--peak-soft);
+    padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+  .meta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+  .dot.on{background:var(--gold)}
+  .chev{font-size:13px;color:var(--ink2);transition:.25s}
+  .card.open .chev{transform:rotate(180deg)}
+
+  .body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .card.open .body{max-height:1400px}
+  .body-inner{padding:2px 16px 18px;border-top:1px dashed var(--line)}
+  .field{margin-top:14px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px;letter-spacing:.3px}
+  .field.star label{color:var(--gold)}
+  .field textarea,.field input{
+    width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14px;
+    font-family:'Pretendard';background:#fff;color:var(--ink);resize:none;line-height:1.5;transition:.15s
+  }
+  .field.star textarea,.field.star input{background:var(--gold-soft);border-color:#e3cd9a}
+  .field textarea:focus,.field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,58,.12)}
+  .field textarea{min-height:54px}
+  .delbtn{margin-top:16px;width:100%;background:none;border:1px solid #e0c5bb;color:var(--peak);
+    padding:9px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer}
+
+  .addbtn{
+    width:100%;background:var(--ink);color:var(--paper);border:none;padding:15px;border-radius:13px;
+    font-size:15px;font-weight:700;font-family:'Pretendard';cursor:pointer;margin-top:8px;letter-spacing:.5px;
+    box-shadow:0 4px 14px var(--shadow);transition:.15s
+  }
+  .addbtn:active{transform:translateY(1px)}
+
+  .tools{display:flex;gap:10px;margin-top:14px}
+  .tools button{flex:1;background:#fbf8f0;border:1px solid var(--line);color:var(--ink2);
+    padding:11px;border-radius:10px;font-size:13px;font-weight:600;font-family:'Pretendard';cursor:pointer}
+  .tip{font-size:12px;color:var(--ink2);line-height:1.6;margin-top:22px;padding:14px 16px;
+    background:rgba(184,137,58,.08);border-radius:11px;border-left:3px solid var(--gold)}
+  .tip b{color:var(--ink)}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--paper);padding:11px 20px;border-radius:30px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:0 6px 20px var(--shadow)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* 탭 */
+  .tabs{display:flex;gap:8px;margin:18px 2px 16px}
+  .tab{flex:1;background:none;border:1.5px solid var(--line);border-radius:11px;padding:12px;
+    font-size:14px;font-weight:700;font-family:'Pretendard';color:var(--ink2);cursor:pointer;transition:.15s}
+  .tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* 매일 기록 입력 */
+  .day-entry{background:#fbf8f0;border:1px solid var(--line);border-radius:16px;padding:18px 16px;
+    box-shadow:0 2px 8px var(--shadow)}
+  .de-datebar{display:flex;align-items:center;gap:10px;justify-content:center}
+  .de-datebar button{background:none;border:1.5px solid var(--line);width:32px;height:32px;border-radius:50%;
+    font-size:17px;color:var(--ink2);cursor:pointer}
+  .de-datebar input[type=date]{border:1px solid var(--line);border-radius:9px;padding:8px 10px;
+    font-family:'Pretendard';font-size:15px;font-weight:700;color:var(--ink);background:#fff}
+  .de-block{margin-top:18px}
+  .de-q{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:9px}
+  .de-q small{font-weight:500;opacity:.7}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:30px;padding:10px 16px;
+    font-size:13px;font-weight:600;font-family:'Pretendard';color:var(--ink2);cursor:pointer;transition:.12s}
+  .chip:active{transform:scale(.95)}
+  .chip.on{color:#fff;border-color:transparent}
+  .day-entry textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+    font-size:14px;font-family:'Pretendard';background:#fff;color:var(--ink);resize:none;min-height:46px;line-height:1.5}
+  .day-entry textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,58,.12)}
+  .day-entry input.txt{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+    font-size:14px;font-family:'Pretendard';background:#fff;color:var(--ink)}
+  .day-entry input.txt:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,58,.12)}
+  .de-saved{text-align:center;font-size:12px;color:var(--gold);font-weight:600;margin-top:16px;min-height:16px}
+
+  /* 지난 기록 (월별) */
+  .hist-head{font-family:'Gowun Batang',serif;font-size:19px;font-weight:700;margin:28px 2px 14px}
+  .month-group{margin-bottom:24px}
+  .mg-head{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+  .mg-title{font-family:'Gowun Batang',serif;font-size:17px;font-weight:700}
+  .mg-stat{font-size:12px;color:var(--ink2)}
+  .mg-copy{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink2);
+    padding:6px 11px;border-radius:8px;font-size:11px;font-weight:600;font-family:'Pretendard';cursor:pointer}
+  .heat{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:12px}
+  .heat i{width:14px;height:14px;border-radius:3px;display:block}
+  .dlog{background:#fbf8f0;border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px}
+  .dlog-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .dlog-date{font-size:13px;font-weight:700;color:var(--ink)}
+  .dlog-busy{font-size:11px;font-weight:700;color:#fff;padding:2px 10px;border-radius:20px}
+  .dlog-prod{font-size:11px;color:var(--ink2)}
+  .dlog-del{margin-left:auto;background:none;border:none;color:var(--ink2);opacity:.45;font-size:17px;cursor:pointer;line-height:1}
+  .dlog-text{font-size:13px;color:var(--ink2);line-height:1.55;margin-top:8px;white-space:pre-wrap}
+  .dlog-prob{color:var(--peak)}
+  .hist-empty{font-size:13px;color:var(--ink2);text-align:center;padding:28px;opacity:.7}
+
+  /* 백업 · 복원 */
+  .backup{margin-top:30px;padding:16px;border:1px dashed var(--line);border-radius:13px;background:rgba(35,48,31,.03)}
+  .backup-q{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:11px}
+  .backup-hint{font-size:11.5px;color:var(--ink2);line-height:1.6;margin-top:11px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">로켓팡팡 · 운영 일지</div>
+    <h1>연간 기록장</h1>
+    <p class="sub">매년 반복되는 시즌을 미리 대비하기 위한 기록.<br>카드를 눌러 그때그때 채워두면, 내년의 나에게 알람이 됩니다.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" id="tabDaily">✏️ 매일 기록</button>
+    <button class="tab" id="tabAnnual">📅 연간 기록</button>
+  </nav>
+
+  <div id="viewAnnual">
+  <div class="yearbar">
+    <button id="prevYear">‹</button>
+    <div class="year"><span id="yearVal"></span>년</div>
+    <button id="nextYear">›</button>
+    <div class="savestate" id="saveState"></div>
+  </div>
+
+  <div class="palette">
+    <button class="palette-toggle" id="palToggle">🎨 월별 색 설정 <span class="caret">▾</span></button>
+    <div class="mc-panel">
+      <p class="mc-hint">월 옆 색을 누르면 그 달 카드 색이 바뀝니다.</p>
+      <div class="mc-grid" id="monthColors"></div>
+      <button class="mc-reset" id="mcReset">기본 색으로 되돌리기</button>
+    </div>
+  </div>
+
+  <div id="list"></div>
+
+  <button class="addbtn" id="addBtn">＋ 직접 사건 추가</button>
+
+  <div class="tools">
+    <button id="copyBtn">📋 전체 내용 복사</button>
+    <button id="resetBtn">↻ 올해 초기화</button>
+  </div>
+
+  <div class="tip">
+    <b>쓰는 요령</b> — 일이 터진 그 주에 딱 3칸만: <b>무슨 일 · 터진 문제 · ★내년 할 일</b>.
+    나머지는 한가할 때 채우세요. 노란색 두 칸이 내년의 알람입니다.
+  </div>
+  </div><!-- /viewAnnual -->
+
+  <div id="viewDaily" style="display:none">
+    <div class="day-entry">
+      <div class="de-datebar">
+        <button id="dayPrev">‹</button>
+        <input type="date" id="dayDate">
+        <button id="dayNext">›</button>
+      </div>
+
+      <div class="de-block">
+        <div class="de-q">오늘 얼마나 바빴나요? <small>(한 번 누르면 그날 기록 완성)</small></div>
+        <div class="chips" id="busyChips"></div>
+      </div>
+
+      <div class="de-block">
+        <div class="de-q">오늘 나간 것</div>
+        <textarea id="dayOut" placeholder="직접 적으세요 (예: 용돈벼락 5건, 졸업현수막 3건)"></textarea>
+      </div>
+
+      <div class="de-block">
+        <div class="de-q">오늘 매출 <small>(원 단위 숫자)</small></div>
+        <input class="txt" id="daySales" inputmode="numeric" placeholder="예: 350000">
+      </div>
+
+      <div class="de-block">
+        <div class="de-q">메모 · 들어온 문의 · 특이사항</div>
+        <textarea id="dayMemo" placeholder="자유롭게 적으세요 (예: 용돈벼락 5건, 졸업현수막 문의 3건)"></textarea>
+      </div>
+
+      <div class="de-block">
+        <div class="de-q">오늘 문제 · 내일 할 일</div>
+        <textarea id="dayTodo" placeholder="있을 때만 적으세요"></textarea>
+      </div>
+
+      <div class="de-saved" id="daySaved"></div>
+    </div>
+
+    <div class="hist-head">지난 기록 (월별 정리)</div>
+    <div class="tools" style="margin-top:0;margin-bottom:14px">
+      <button id="exportXlsx">📊 엑셀로 내보내기</button>
+    </div>
+    <div id="dailyHist"></div>
+
+    <div class="tip">
+      <b>쓰는 요령</b> — <b>바쁨 정도</b>만 한 번 눌러도 그날 기록은 완성이에요. 나머지는 여유 있을 때만.
+      매일 쌓인 기록이 아래에 <b>월별로 자동 정리</b>되고, 각 달의 <b>요약 복사</b>로 연간 기록장에 옮겨 적을 수 있어요.
+    </div>
+  </div><!-- /viewDaily -->
+
+  <div class="backup">
+    <div class="backup-q">💾 데이터 백업 · 복원</div>
+    <div class="tools" style="margin-top:0">
+      <button id="backupBtn">전체 백업 저장</button>
+      <button id="restoreBtn">백업 불러오기</button>
+    </div>
+    <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
+    <p class="backup-hint">앱을 새 주소에 다시 올리기 전에 <b>전체 백업 저장</b>을 눌러 파일을 받아두세요.
+      새 버전을 연 뒤 <b>백업 불러오기</b>로 그 파일을 고르면, 연간 기록·월별 색·매일 기록이 그대로 복원됩니다.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SKELETON = [
+  {m:"1",  p:"1월 초",                  t:"신정·시무식 → 시무식/새해 현수막"},
+  {m:"2",  p:"2월 초~중순",             t:"졸업식 시즌 → 용돈벼락·졸업축하 현수막", peak:true},
+  {m:"2",  p:"설 연휴 전후(음력)",        t:"설날 세뱃돈 → 용돈벼락·용돈ATM", peak:true},
+  {m:"2",  p:"2/14",                    t:"밸런타인데이"},
+  {m:"3",  p:"3월 초",                  t:"입학식·개강 → 입학축하 현수막"},
+  {m:"3",  p:"3/14",                    t:"화이트데이"},
+  {m:"4",  p:"4월",                     t:"봄 축제·야외행사 → 행사 현수막"},
+  {m:"5",  p:"5월 초~중순",             t:"가정의달(어린이·어버이·스승의날) → 용돈벼락 최대 대목", peak:true},
+  {m:"5",  p:"5월 주말",                t:"결혼 시즌 → 축하 현수막"},
+  {m:"6",  p:"6월",                     t:"비수기 → 장비점검·마케팅·재고정리 적기"},
+  {m:"7",  p:"7~8월",                   t:"여름휴가·워크샵·여름축제 → 행사 현수막"},
+  {m:"9",  p:"추석 전후(음력)",          t:"추석 → 용돈벼락 / 가을 운동회", peak:true},
+  {m:"10", p:"10월",                    t:"가을축제·운동회·핼러윈 → 행사 현수막"},
+  {m:"11", p:"11월 중순",               t:"수능 → 수능응원 현수막"},
+  {m:"11", p:"11/11",                   t:"빼빼로데이"},
+  {m:"12", p:"12월",                    t:"송년회·연말 시상식 → 시상 현수막·크리스마스"},
+];
+const FIELDS = [
+  {k:"what", label:"무슨 일이 있었나", ph:"실제로 우리한테 일어난 일", area:true},
+  {k:"scale",label:"규모 (주문건수·매출·문의량)", ph:"대략이라도", area:false},
+  {k:"prob", label:"터진 문제", ph:"인쇄 지연, 재고 부족, 클레임 등", area:true},
+  {k:"win",  label:"잘 된 것", ph:"내년에 반복할 것", area:true},
+  {k:"next", label:"★ 내년 할 일", ph:"다음에 할 행동을 적으세요", area:true, star:true},
+  {k:"prep", label:"★ 준비 시작 시점", ph:"예: 1월 셋째 주", area:false, star:true},
+];
+
+// storage with safe fallback (works fully once deployed; in-memory in preview)
+let mem = {};
+const store = {
+  get(key){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):null }catch(e){ return mem[key]||null } },
+  set(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)) }catch(e){ mem[key]=val } },
+  persistent(){ try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true }catch(e){ return false } }
+};
+
+let year = new Date().getFullYear();
+let data = [];
+
+// ---- 월별 색 고르기 ----
+const DEFAULT_MONTH_COLORS = {
+  "1":"#3a6ea5","2":"#a8421f","3":"#5a9367","4":"#88a04b","5":"#c8651a","6":"#1f7a6e",
+  "7":"#2f7fb0","8":"#6b8fb0","9":"#8a6d3b","10":"#b8893a","11":"#6b3fa0","12":"#8a2846"
+};
+const MONTH_KEY = 'rocketpang_monthcolors';
+let monthColors = {};
+function colorFor(m){
+  const k = String(parseInt(m)); // "7~8월" 등도 첫 숫자로 매칭
+  return monthColors[k] || DEFAULT_MONTH_COLORS[k] || '#3a3a3a';
+}
+function loadMonthColors(){
+  monthColors = store.get(MONTH_KEY) || {...DEFAULT_MONTH_COLORS};
+}
+function buildMonthSettings(){
+  const box = document.getElementById('monthColors');
+  box.innerHTML = '';
+  for(let m=1;m<=12;m++){
+    const row = document.createElement('div');
+    row.className = 'mc-row';
+    row.innerHTML = `<span class="mc-label">${m}월</span>
+      <input type="color" value="${monthColors[m]||DEFAULT_MONTH_COLORS[m]}">`;
+    const inp = row.querySelector('input');
+    inp.oninput = ()=>{
+      monthColors[m] = inp.value;
+      store.set(MONTH_KEY, monthColors);
+      render(); saveState();
+    };
+    box.appendChild(row);
+  }
+}
+document.getElementById('palToggle').onclick = ()=>{
+  document.querySelector('.palette').classList.toggle('open');
+};
+document.getElementById('mcReset').onclick = ()=>{
+  monthColors = {...DEFAULT_MONTH_COLORS};
+  store.set(MONTH_KEY, monthColors);
+  buildMonthSettings(); render(); toast('기본 색으로 되돌렸어요');
+};
+
+function keyFor(y){ return 'rocketpang_log_'+y }
+function seed(){ return SKELETON.map((s,i)=>({id:'s'+i, m:s.m, p:s.p, t:s.t, peak:!!s.peak, custom:false, v:{}})); }
+function load(){
+  const saved = store.get(keyFor(year));
+  data = saved || seed();
+  render();
+  saveState();
+}
+function save(){ store.set(keyFor(year), data); saveState(); }
+function saveState(){
+  document.getElementById('saveState').textContent = store.persistent() ? '자동 저장됨' : '미리보기(저장 X)';
+}
+
+function hasNotes(ev){ return Object.values(ev.v||{}).some(x=>x&&x.trim()); }
+
+function render(){
+  document.getElementById('yearVal').textContent = year;
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  data.forEach(ev=>{
+    const card = document.createElement('div');
+    card.className = 'card'+(ev.peak?' peak':'');
+    const mc = colorFor(ev.m);
+    card.style.borderLeft = '5px solid '+mc;
+    const filled = hasNotes(ev);
+    card.innerHTML = `
+      <div class="head">
+        <div class="badge" style="background:${mc}"><b>${ev.m}</b><small>월</small></div>
+        <div class="htext">
+          <div class="period" style="color:${mc}">${esc(ev.p)}</div>
+          <div class="trigger">${esc(ev.t)}${ev.peak?`<span class="peaktag" style="color:${mc};background:color-mix(in srgb, ${mc} 15%, #fff)">대목</span>`:''}</div>
+        </div>
+        <div class="meta"><div class="dot${filled?' on':''}"></div><div class="chev">▾</div></div>
+      </div>
+      <div class="body"><div class="body-inner"></div></div>`;
+    const inner = card.querySelector('.body-inner');
+    FIELDS.forEach(f=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'field'+(f.star?' star':'');
+      const val = (ev.v&&ev.v[f.k])||'';
+      wrap.innerHTML = `<label>${f.label}</label>`+
+        (f.area
+          ? `<textarea placeholder="${f.ph}">${esc(val)}</textarea>`
+          : `<input value="${esc(val)}" placeholder="${f.ph}">`);
+      const input = wrap.querySelector('textarea,input');
+      input.addEventListener('input',()=>{
+        ev.v[f.k]=input.value; save();
+        card.querySelector('.dot').classList.toggle('on',hasNotes(ev));
+        if(f.area) autosize(input);
+      });
+      inner.appendChild(wrap);
+      if(f.area) setTimeout(()=>autosize(input),0);
+    });
+    {
+      const del = document.createElement('button');
+      del.className='delbtn'; del.textContent='이 사건 삭제';
+      del.onclick=(e)=>{
+        e.stopPropagation();
+        const note = hasNotes(ev) ? '\n(채워둔 기록도 함께 지워집니다)' : '';
+        if(!confirm(`"${ev.m}월 · ${ev.t}"\n이 사건을 삭제할까요?`+note)) return;
+        data=data.filter(x=>x.id!==ev.id); save(); render(); toast('삭제했어요');
+      };
+      inner.appendChild(del);
+    }
+    card.querySelector('.head').onclick=()=>card.classList.toggle('open');
+    list.appendChild(card);
+  });
+}
+
+function autosize(el){ el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+document.getElementById('prevYear').onclick=()=>{ year--; load(); };
+document.getElementById('nextYear').onclick=()=>{ year++; load(); };
+
+document.getElementById('addBtn').onclick=()=>{
+  const m = prompt('몇 월인가요? (숫자만)','');
+  if(!m) return;
+  const t = prompt('어떤 사건/시즌인가요?','') || '직접 추가';
+  data.push({id:'c'+Date.now(), m:m.replace(/[^0-9~]/g,'')||'?', p:'', t:t, peak:false, custom:true, v:{}});
+  data.sort((a,b)=>(parseInt(a.m)||99)-(parseInt(b.m)||99));
+  save(); render(); toast('추가했어요');
+};
+
+document.getElementById('copyBtn').onclick=()=>{
+  let txt = `■ 로켓팡팡 연간 기록 — ${year}년\n\n`;
+  data.forEach(ev=>{
+    if(!hasNotes(ev)) return;
+    txt += `[${ev.m}월] ${ev.p} · ${ev.t}\n`;
+    FIELDS.forEach(f=>{ const v=ev.v[f.k]; if(v&&v.trim()) txt+=`  - ${f.label.replace('★ ','')}: ${v}\n`; });
+    txt += '\n';
+  });
+  if(txt.trim().endsWith(`${year}년`)) txt += '(아직 채운 기록이 없어요)';
+  navigator.clipboard.writeText(txt).then(()=>toast('복사 완료! 메모장에 붙여넣어 백업하세요')).catch(()=>{
+    prompt('아래 내용을 복사하세요',txt);
+  });
+};
+
+document.getElementById('resetBtn').onclick=()=>{
+  if(confirm(`${year}년 기록을 모두 지우고 시즌 뼈대만 다시 깔까요?`)){
+    data = seed(); save(); render(); toast('초기화했어요');
+  }
+};
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ================= 매일 기록 =================
+const BUSY = [
+  {n:"한산", c:"#5a9367"}, {n:"보통", c:"#3a6ea5"},
+  {n:"바쁨", c:"#c8651a"}, {n:"폭주", c:"#a8421f"}
+];
+const DAILY_KEY = 'rocketpang_daily';
+let daily = {};      // { "2026-05-31": {busy, out, sales, memo, todo} }
+let dayCur = "";
+
+function busyColor(n){ const f=BUSY.find(b=>b.n===n); return f?f.c:'#b9b2a0'; }
+function todayStr(){ const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function shiftDay(s,delta){ const d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+delta);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function loadDaily(){
+  daily = store.get(DAILY_KEY) || {};
+  // 예전 칩(prods) 기록을 '나간 것' 글자로 자동 변환
+  let changed=false;
+  Object.keys(daily).forEach(d=>{
+    const e=daily[d];
+    if(e && Array.isArray(e.prods)){
+      if(!e.out && e.prods.length) e.out = e.prods.join(', ');
+      delete e.prods; changed=true;
+    }
+  });
+  if(changed) store.set(DAILY_KEY, daily);
+}
+function getEntry(date){ return daily[date] || {busy:"", out:"", sales:"", memo:"", todo:""}; }
+function isEmpty(e){ return !e.busy && !(e.out||"").trim() && !(e.sales||"").trim() && !(e.memo||"").trim() && !(e.todo||"").trim(); }
+function parseSales(s){ const n=parseInt(String(s||'').replace(/[^0-9]/g,'')); return isNaN(n)?0:n; }
+function wonFmt(n){ return '₩'+n.toLocaleString('ko-KR'); }
+function writeEntry(date, e){
+  if(isEmpty(e)) delete daily[date]; else daily[date] = e;
+  store.set(DAILY_KEY, daily);
+  document.getElementById('daySaved').textContent = store.persistent() ? '저장됨 ✓' : '미리보기(저장 X)';
+  renderDailyHist();
+}
+
+function buildDailyEntry(){
+  document.getElementById('dayDate').value = dayCur;
+  const e = getEntry(dayCur);
+  // 바쁨 칩
+  const bc = document.getElementById('busyChips'); bc.innerHTML='';
+  BUSY.forEach(b=>{
+    const chip=document.createElement('button');
+    chip.className='chip'+(e.busy===b.n?' on':'');
+    chip.textContent=b.n;
+    if(e.busy===b.n) chip.style.background=b.c;
+    chip.onclick=()=>{ const en=getEntry(dayCur); en.busy=(en.busy===b.n?'':b.n);
+      writeEntry(dayCur,en); buildDailyEntry(); };
+    bc.appendChild(chip);
+  });
+  // 직접 기입
+  const out=document.getElementById('dayOut'); out.value=e.out||'';
+  const sales=document.getElementById('daySales'); sales.value=e.sales||'';
+  const memo=document.getElementById('dayMemo'); memo.value=e.memo||'';
+  const todo=document.getElementById('dayTodo'); todo.value=e.todo||'';
+  out.oninput=()=>{ const en=getEntry(dayCur); en.out=out.value; writeEntry(dayCur,en); };
+  sales.oninput=()=>{ const en=getEntry(dayCur); en.sales=sales.value; writeEntry(dayCur,en); };
+  memo.oninput=()=>{ const en=getEntry(dayCur); en.memo=memo.value; writeEntry(dayCur,en); };
+  todo.oninput=()=>{ const en=getEntry(dayCur); en.todo=todo.value; writeEntry(dayCur,en); };
+  document.getElementById('daySaved').textContent = isEmpty(e)?'':'저장됨 ✓';
+}
+
+document.getElementById('dayPrev').onclick=()=>{ dayCur=shiftDay(dayCur,-1); buildDailyEntry(); };
+document.getElementById('dayNext').onclick=()=>{ dayCur=shiftDay(dayCur,1); buildDailyEntry(); };
+document.getElementById('dayDate').onchange=(e)=>{ if(e.target.value){ dayCur=e.target.value; buildDailyEntry(); } };
+
+function renderDailyHist(){
+  const box=document.getElementById('dailyHist');
+  const dates=Object.keys(daily).filter(d=>!isEmpty(daily[d])).sort().reverse();
+  if(!dates.length){ box.innerHTML='<div class="hist-empty">아직 기록이 없어요. 위에서 오늘 기록을 시작해보세요.</div>'; return; }
+  // 월별 그룹
+  const groups={};
+  dates.forEach(d=>{ const mk=d.slice(0,7); (groups[mk]=groups[mk]||[]).push(d); });
+  box.innerHTML='';
+  Object.keys(groups).sort().reverse().forEach(mk=>{
+    const [yy,mm]=mk.split('-');
+    const entryDates=groups[mk]; // desc
+    const counts={}; BUSY.forEach(b=>counts[b.n]=0);
+    let mSales=0;
+    entryDates.forEach(d=>{ const b=daily[d].busy; if(b) counts[b]++; mSales+=parseSales(daily[d].sales); });
+    const statParts=BUSY.slice().reverse().filter(b=>counts[b.n]).map(b=>`${b.n} ${counts[b.n]}`);
+    let stat=`${entryDates.length}일 기록`+(statParts.length?'  ·  '+statParts.join(' / '):'');
+    if(mSales>0) stat+=`  ·  매출 ${wonFmt(mSales)}`;
+
+    const grp=document.createElement('div'); grp.className='month-group';
+    const head=document.createElement('div'); head.className='mg-head';
+    head.innerHTML=`<span class="mg-title">${yy}년 ${parseInt(mm)}월</span>
+      <span class="mg-stat">${stat}</span>
+      <button class="mg-copy">📋 요약 복사</button>`;
+    head.querySelector('.mg-copy').onclick=()=>copyMonth(mk);
+    grp.appendChild(head);
+
+    // 히트맵 (날짜순)
+    const heat=document.createElement('div'); heat.className='heat';
+    entryDates.slice().reverse().forEach(d=>{
+      const i=document.createElement('i');
+      i.style.background=daily[d].busy?busyColor(daily[d].busy):'#ddd6c4';
+      i.title=d+(daily[d].busy?' · '+daily[d].busy:'');
+      heat.appendChild(i);
+    });
+    grp.appendChild(heat);
+
+    // 일별 카드
+    entryDates.forEach(d=>{
+      const e=daily[d];
+      const dlog=document.createElement('div'); dlog.className='dlog';
+      const dd=new Date(d+'T00:00:00');
+      const wd=['일','월','화','수','목','금','토'][dd.getDay()];
+      let texts='';
+      if((e.out||'').trim()) texts+=`<div class="dlog-text">▸ ${esc(e.out)}</div>`;
+      if((e.memo||'').trim()) texts+=`<div class="dlog-text">${esc(e.memo)}</div>`;
+      if((e.todo||'').trim()) texts+=`<div class="dlog-text dlog-prob">⚑ ${esc(e.todo)}</div>`;
+      const sv=parseSales(e.sales);
+      dlog.innerHTML=`
+        <div class="dlog-top">
+          <span class="dlog-date">${parseInt(d.slice(8))}일(${wd})</span>
+          ${e.busy?`<span class="dlog-busy" style="background:${busyColor(e.busy)}">${e.busy}</span>`:''}
+          ${sv>0?`<span class="dlog-prod">${wonFmt(sv)}</span>`:''}
+          <button class="dlog-del">✕</button>
+        </div>${texts}`;
+      dlog.querySelector('.dlog-del').onclick=()=>{
+        if(!confirm(`${d} 기록을 삭제할까요?`)) return;
+        delete daily[d]; store.set(DAILY_KEY,daily);
+        if(d===dayCur) buildDailyEntry(); renderDailyHist();
+      };
+      grp.appendChild(dlog);
+    });
+    box.appendChild(grp);
+  });
+}
+
+function copyMonth(mk){
+  const [yy,mm]=mk.split('-');
+  const ds=Object.keys(daily).filter(d=>d.slice(0,7)===mk&&!isEmpty(daily[d])).sort();
+  const counts={}; BUSY.forEach(b=>counts[b.n]=0);
+  let mSales=0;
+  ds.forEach(d=>{ if(daily[d].busy) counts[daily[d].busy]++; mSales+=parseSales(daily[d].sales); });
+  let txt=`■ ${yy}년 ${parseInt(mm)}월 일일기록 요약\n`;
+  txt+=`바쁨 분포: `+BUSY.slice().reverse().map(b=>`${b.n} ${counts[b.n]}`).join(' / ')+`\n`;
+  if(mSales>0) txt+=`매출 합계: ${wonFmt(mSales)}\n`;
+  txt+='\n';
+  ds.forEach(d=>{ const e=daily[d];
+    txt+=`[${d.slice(5)}] ${e.busy||'-'}`;
+    if((e.out||'').trim()) txt+=` · ${e.out}`;
+    if(parseSales(e.sales)>0) txt+=` · ${wonFmt(parseSales(e.sales))}`;
+    if((e.memo||'').trim()) txt+=` · 메모: ${e.memo}`;
+    if((e.todo||'').trim()) txt+=` · 문제/할일: ${e.todo}`;
+    txt+='\n';
+  });
+  navigator.clipboard.writeText(txt).then(()=>toast('이 달 요약 복사 완료'))
+    .catch(()=>prompt('복사하세요',txt));
+}
+
+// 탭 전환
+function setTab(which){
+  const a=which==='annual';
+  document.getElementById('viewAnnual').style.display=a?'':'none';
+  document.getElementById('viewDaily').style.display=a?'none':'';
+  document.getElementById('tabAnnual').classList.toggle('active',a);
+  document.getElementById('tabDaily').classList.toggle('active',!a);
+}
+document.getElementById('tabAnnual').onclick=()=>setTab('annual');
+document.getElementById('tabDaily').onclick=()=>setTab('daily');
+
+// 엑셀 내보내기 (일일기록 + 월별요약 두 시트)
+function exportDailyExcel(){
+  if(typeof XLSX==='undefined'){ toast('엑셀 기능을 불러오는 중이에요. 잠시 후 다시 눌러주세요'); return; }
+  const dates=Object.keys(daily).filter(d=>!isEmpty(daily[d])).sort();
+  if(!dates.length){ toast('아직 내보낼 기록이 없어요'); return; }
+  const wb=XLSX.utils.book_new();
+
+  // 시트1: 일일기록
+  const rows=[['날짜','요일','바쁨','나간 것','매출(원)','메모·문의','문제·내일할일']];
+  dates.forEach(d=>{ const e=daily[d]; const dd=new Date(d+'T00:00:00');
+    const wd=['일','월','화','수','목','금','토'][dd.getDay()];
+    const sv=parseSales(e.sales);
+    rows.push([d, wd, e.busy||'', e.out||'', sv||'', e.memo||'', e.todo||'']);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:6},{wch:8},{wch:24},{wch:12},{wch:30},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'일일기록');
+
+  // 시트2: 월별요약
+  const groups={}; dates.forEach(d=>{ const mk=d.slice(0,7); (groups[mk]=groups[mk]||[]).push(d); });
+  const srows=[['월','기록일수','폭주','바쁨','보통','한산','매출합계(원)']];
+  Object.keys(groups).sort().forEach(mk=>{
+    const c={한산:0,보통:0,바쁨:0,폭주:0}; let sum=0;
+    groups[mk].forEach(d=>{ if(daily[d].busy) c[daily[d].busy]++; sum+=parseSales(daily[d].sales); });
+    const [yy,mm]=mk.split('-');
+    srows.push([`${yy}-${mm}`, groups[mk].length, c['폭주'], c['바쁨'], c['보통'], c['한산'], sum||'']);
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(srows);
+  ws2['!cols']=[{wch:10},{wch:9},{wch:7},{wch:7},{wch:7},{wch:7},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws2,'월별요약');
+
+  XLSX.writeFile(wb, `로켓팡팡_일일기록_${todayStr()}.xlsx`);
+  toast(`엑셀로 ${dates.length}일치를 뽑았어요`);
+}
+document.getElementById('exportXlsx').onclick=exportDailyExcel;
+
+// 데이터 백업 · 복원 (앱 버전이 바뀌거나 주소가 바뀌어도 그대로 옮기기)
+function collectAll(){
+  const out={};
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && k.indexOf('rocketpang_')===0) out[k]=localStorage.getItem(k);
+    }
+  }catch(e){}
+  Object.keys(mem).forEach(k=>{ if(k.indexOf('rocketpang_')===0 && !(k in out)) out[k]=JSON.stringify(mem[k]); });
+  return out;
+}
+function backupData(){
+  const payload={ app:'rocketpang', version:1, exportedAt:new Date().toISOString(), store:collectAll() };
+  const cnt=Object.keys(payload.store).length;
+  if(!cnt){ toast('백업할 데이터가 아직 없어요'); return; }
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`로켓팡팡_백업_${todayStr()}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  toast('백업 파일을 저장했어요');
+}
+function reloadAll(){
+  loadMonthColors(); buildMonthSettings();
+  load(); loadDaily(); dayCur=todayStr(); buildDailyEntry(); renderDailyHist();
+}
+function restoreData(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let obj;
+    try{ obj=JSON.parse(reader.result); }catch(e){ alert('파일을 읽을 수 없어요. 올바른 백업 파일인지 확인해주세요.'); return; }
+    if(!obj || obj.app!=='rocketpang' || !obj.store){ alert('로켓팡팡 백업 파일이 아니에요.'); return; }
+    const cnt=Object.keys(obj.store).length;
+    if(!confirm(`백업(${cnt}개 항목)을 불러오면 지금 데이터를 덮어씁니다.\n진행할까요?`)) return;
+    Object.keys(obj.store).forEach(k=>{
+      const v=obj.store[k];
+      try{ localStorage.setItem(k,v); }
+      catch(e){ try{ mem[k]=JSON.parse(v); }catch(_){ mem[k]=v; } }
+    });
+    reloadAll();
+    toast('백업을 불러왔어요 ✓');
+  };
+  reader.readAsText(file);
+}
+document.getElementById('backupBtn').onclick=backupData;
+document.getElementById('restoreBtn').onclick=()=>document.getElementById('restoreFile').click();
+document.getElementById('restoreFile').onchange=(e)=>{
+  if(e.target.files&&e.target.files[0]) restoreData(e.target.files[0]);
+  e.target.value='';
+};
+
+loadMonthColors();
+buildMonthSettings();
+load();
+loadDaily();
+dayCur=todayStr();
+buildDailyEntry();
+renderDailyHist();
+setTab('daily');
+</script>
+</body>
+</html>
